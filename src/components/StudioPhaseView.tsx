@@ -27,18 +27,26 @@ export function StudioPhaseView({ entries }: { entries: Entry[] }) {
               <h2 className="font-display text-2xl tracking-wide text-neutral-50">{info.label}</h2>
               <span className="text-xs font-medium text-neutral-500">{group.total} títulos</span>
             </div>
-            {group.arcs.map((arcGroup) => (
-              <Section
-                key={arcGroup.arc}
-                title={arcGroup.arc}
-                count={arcGroup.entries.length}
-                accentColor={info.color}
-              >
-                {arcGroup.entries.map((entry) => (
+            {group.studio === 'MCU' ? (
+              group.arcs.map((arcGroup) => (
+                <Section
+                  key={arcGroup.arc}
+                  title={arcGroup.arc}
+                  count={arcGroup.entries.length}
+                  accentColor={info.color}
+                >
+                  {arcGroup.entries.map((entry) => (
+                    <EntryCard key={entry.id} entry={entry} />
+                  ))}
+                </Section>
+              ))
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {group.arcs[0].entries.map((entry) => (
                   <EntryCard key={entry.id} entry={entry} />
                 ))}
-              </Section>
-            ))}
+              </ul>
+            )}
           </div>
         )
       })}

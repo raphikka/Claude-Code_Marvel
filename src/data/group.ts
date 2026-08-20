@@ -30,6 +30,17 @@ export function groupByStudioAndArc(entries: Entry[]): StudioGroup[] {
 
   return STUDIO_ORDER.filter((s) => byStudio.has(s)).map((studio) => {
     const studioEntries = byStudio.get(studio)!.slice().sort(byReleaseDate)
+
+    // Só a Marvel Studios (MCU) é subdividida por fase — as demais entram
+    // numa única caixa por estúdio, unificando todas as sublinhagens.
+    if (studio !== 'MCU') {
+      return {
+        studio,
+        total: studioEntries.length,
+        arcs: [{ arc: 'all', entries: studioEntries }],
+      }
+    }
+
     const arcOrder: string[] = []
     const byArc = new Map<string, Entry[]>()
     for (const e of studioEntries) {
