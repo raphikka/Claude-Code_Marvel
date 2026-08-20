@@ -1,0 +1,15 @@
+{
+  "name": "Mapa Marvel — Cronologia",
+  "short_name": "Mapa Marvel",
+  "description": "Mapeamento de filmes e séries da Marvel e outros estúdios, por estúdio/fase, história e lançamento.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b0b12",
+  "theme_color": "#0b0b12",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
