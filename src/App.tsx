@@ -5,6 +5,7 @@ import { StoryChronologyView } from './components/StoryChronologyView'
 import { ReleaseChronologyView } from './components/ReleaseChronologyView'
 import { ClassicView } from './components/ClassicView'
 import { LayersIcon, ClockIcon, CalendarIcon } from './components/icons'
+import { WatchedProvider, useWatched } from './hooks/useWatched'
 
 type EraTab = 'modern' | 'classic'
 type ModernView = 'studio' | 'story' | 'release'
@@ -15,7 +16,25 @@ const MODERN_VIEWS: { id: ModernView; label: string; short: string; icon: typeof
   { id: 'release', label: 'Cronologia de Lançamento', short: 'Lançamento', icon: CalendarIcon },
 ]
 
-function App() {
+const TOTAL_ENTRIES = ENTRIES.length + PRE_2000_ENTRIES.length
+
+function WatchedProgress() {
+  const { watchedCount } = useWatched()
+  const pct = TOTAL_ENTRIES === 0 ? 0 : Math.round((watchedCount / TOTAL_ENTRIES) * 100)
+
+  return (
+    <div className="mt-2.5 flex items-center gap-2">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
+        <div className="h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="shrink-0 text-xs font-medium text-neutral-500">
+        {watchedCount}/{TOTAL_ENTRIES} assistidos
+      </span>
+    </div>
+  )
+}
+
+function AppShell() {
   const [era, setEra] = useState<EraTab>('modern')
   const [view, setView] = useState<ModernView>('studio')
 
@@ -30,6 +49,7 @@ function App() {
             MAPA <span className="text-marvel-red">MARVEL</span>
           </h1>
           <p className="text-xs text-neutral-500">Filmes e séries da Marvel, Sony, Fox e mais — de 2000 até hoje</p>
+          <WatchedProgress />
         </div>
 
         <nav className="flex gap-1 px-3 pb-3" role="tablist" aria-label="Período">
@@ -97,9 +117,18 @@ function App() {
         className="px-4 pb-4 text-center text-[11px] text-neutral-600"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}
       >
-        Cronologia editorial não-oficial, feita por fãs — sujeita a revisão conforme novos lançamentos.
+        Cronologia editorial não-oficial, feita por fãs — sujeita a revisão conforme novos lançamentos. Seu progresso
+        de "assistidos" fica salvo neste navegador.
       </footer>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <WatchedProvider>
+      <AppShell />
+    </WatchedProvider>
   )
 }
 
