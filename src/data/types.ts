@@ -58,6 +58,7 @@ export interface Entry {
   studio: Studio
   network?: string // e.g. Netflix, Disney+, ABC, Hulu, FX
   arc: string // grouping used in "by studio/phase" view
+  lineage: string[] // franchise/character tags, used by the lineage filter (see data/lineages.ts)
   saga?: string // MCU overarching saga
   storyEra: string // human label for the story-set period
   storyOrder: number // numeric sort key for unified story chronology

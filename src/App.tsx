@@ -1,10 +1,12 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ENTRIES, PRE_2000_ENTRIES } from './data/entries'
+import { DEFAULT_FILTERS, activeFilterCount, applyFilters, type Filters } from './data/filters'
 import { StudioPhaseView } from './components/StudioPhaseView'
 import { StoryChronologyView } from './components/StoryChronologyView'
 import { ReleaseChronologyView } from './components/ReleaseChronologyView'
 import { ClassicView } from './components/ClassicView'
-import { LayersIcon, ClockIcon, CalendarIcon } from './components/icons'
+import { FilterPanel } from './components/FilterPanel'
+import { LayersIcon, ClockIcon, CalendarIcon, FilterIcon } from './components/icons'
 import { WatchedProvider, useWatched } from './hooks/useWatched'
 
 type EraTab = 'modern' | 'classic'
@@ -17,6 +19,9 @@ const MODERN_VIEWS: { id: ModernView; label: string; short: string; icon: typeof
 ]
 
 const TOTAL_ENTRIES = ENTRIES.length + PRE_2000_ENTRIES.length
+
+const ALL_YEARS = [...ENTRIES, ...PRE_2000_ENTRIES].map((e) => e.year)
+const YEAR_BOUNDS: [number, number] = [Math.min(...ALL_YEARS), Math.max(...ALL_YEARS)]
 
 function WatchedProgress() {
   const { watchedCount } = useWatched()
@@ -34,9 +39,32 @@ function WatchedProgress() {
   )
 }
 
+function EmptyState({ onClear }: { onClear: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-dashed border-neutral-800 px-4 py-12 text-center">
+      <p className="text-sm font-medium text-neutral-400">Nenhum título encontrado com esses filtros.</p>
+      <button
+        type="button"
+        onClick={onClear}
+        className="rounded-lg bg-neutral-800 px-4 py-2 text-sm font-semibold text-neutral-200"
+      >
+        Limpar filtros
+      </button>
+    </div>
+  )
+}
+
 function AppShell() {
   const [era, setEra] = useState<EraTab>('modern')
   const [view, setView] = useState<ModernView>('studio')
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+  const { isWatched } = useWatched()
+
+  const modernEntries = useMemo(() => applyFilters(ENTRIES, filters, isWatched), [filters, isWatched])
+  const classicEntries = useMemo(() => applyFilters(PRE_2000_ENTRIES, filters, isWatched), [filters, isWatched])
+  const activeEntries = era === 'modern' ? modernEntries : classicEntries
+  const filterCount = activeFilterCount(filters)
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-2xl flex-col">
@@ -52,30 +80,50 @@ function AppShell() {
           <WatchedProgress />
         </div>
 
-        <nav className="flex gap-1 px-3 pb-3" role="tablist" aria-label="Período">
+        <div className="flex gap-2 px-3 pb-3">
+          <nav className="flex flex-1 gap-1" role="tablist" aria-label="Período">
+            <button
+              role="tab"
+              aria-selected={era === 'modern'}
+              onClick={() => setEra('modern')}
+              className={
+                'flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ' +
+                (era === 'modern' ? 'bg-marvel-red text-white' : 'bg-neutral-900 text-neutral-400')
+              }
+            >
+              2000 até hoje
+            </button>
+            <button
+              role="tab"
+              aria-selected={era === 'classic'}
+              onClick={() => setEra('classic')}
+              className={
+                'flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ' +
+                (era === 'classic' ? 'bg-marvel-red text-white' : 'bg-neutral-900 text-neutral-400')
+              }
+            >
+              Antes de 2000
+            </button>
+          </nav>
           <button
-            role="tab"
-            aria-selected={era === 'modern'}
-            onClick={() => setEra('modern')}
+            type="button"
+            onClick={() => setFiltersOpen(true)}
             className={
-              'flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ' +
-              (era === 'modern' ? 'bg-marvel-red text-white' : 'bg-neutral-900 text-neutral-400')
+              'relative flex shrink-0 items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors ' +
+              (filterCount > 0
+                ? 'border-marvel-red bg-marvel-red/15 text-marvel-red'
+                : 'border-neutral-800 bg-neutral-900 text-neutral-400')
             }
           >
-            2000 até hoje
+            <FilterIcon className="h-4 w-4" />
+            Filtros
+            {filterCount > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-marvel-red px-1 text-[10px] font-bold text-white">
+                {filterCount}
+              </span>
+            )}
           </button>
-          <button
-            role="tab"
-            aria-selected={era === 'classic'}
-            onClick={() => setEra('classic')}
-            className={
-              'flex-1 rounded-lg px-3 py-2 text-sm font-semibold transition-colors ' +
-              (era === 'classic' ? 'bg-marvel-red text-white' : 'bg-neutral-900 text-neutral-400')
-            }
-          >
-            Antes de 2000
-          </button>
-        </nav>
+        </div>
 
         {era === 'modern' && (
           <div className="no-scrollbar flex gap-2 overflow-x-auto px-3 pb-3" role="tablist" aria-label="Visualização">
@@ -102,14 +150,16 @@ function AppShell() {
       </header>
 
       <main className="flex-1 px-4 pb-10 pt-4">
-        {era === 'modern' ? (
+        {activeEntries.length === 0 ? (
+          <EmptyState onClear={() => setFilters(DEFAULT_FILTERS)} />
+        ) : era === 'modern' ? (
           <>
-            {view === 'studio' && <StudioPhaseView entries={ENTRIES} />}
-            {view === 'story' && <StoryChronologyView entries={ENTRIES} />}
-            {view === 'release' && <ReleaseChronologyView entries={ENTRIES} />}
+            {view === 'studio' && <StudioPhaseView entries={modernEntries} />}
+            {view === 'story' && <StoryChronologyView entries={modernEntries} />}
+            {view === 'release' && <ReleaseChronologyView entries={modernEntries} />}
           </>
         ) : (
-          <ClassicView entries={PRE_2000_ENTRIES} />
+          <ClassicView entries={classicEntries} />
         )}
       </main>
 
@@ -120,6 +170,15 @@ function AppShell() {
         Cronologia editorial não-oficial, feita por fãs — sujeita a revisão conforme novos lançamentos. Seu progresso
         de "assistidos" fica salvo neste navegador.
       </footer>
+
+      <FilterPanel
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        filters={filters}
+        onChange={setFilters}
+        resultCount={activeEntries.length}
+        yearBounds={YEAR_BOUNDS}
+      />
     </div>
   )
 }
