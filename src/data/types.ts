@@ -56,7 +56,8 @@ export interface Entry {
   releaseDate: string // YYYY-MM-DD, used for release-order sorting
   type: MediaType
   studio: Studio
-  network?: string // e.g. Netflix, Disney+, ABC, Hulu, FX
+  network?: string // original release platform, e.g. Netflix, Disney+, ABC, Hulu, FX
+  streaming?: string // where to watch it today (can change over time, unlike `network`)
   arc: string // grouping used in "by studio/phase" view
   lineage: string[] // franchise/character tags, used by the lineage filter (see data/lineages.ts)
   saga?: string // MCU overarching saga

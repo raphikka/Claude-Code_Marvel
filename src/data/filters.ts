@@ -1,6 +1,7 @@
 import type { Entry, MediaType, Studio } from './types'
+import type { WatchStatus } from '../hooks/useWatched'
 
-export type WatchedFilter = 'all' | 'watched' | 'unwatched'
+export type WatchedFilter = 'all' | 'watched' | 'skip' | 'pending'
 
 export interface Filters {
   lineages: string[]
@@ -41,13 +42,18 @@ export function activeFilterCount(f: Filters): number {
   return n
 }
 
-export function applyFilters(entries: Entry[], filters: Filters, isWatched: (id: string) => boolean): Entry[] {
+export function applyFilters(
+  entries: Entry[],
+  filters: Filters,
+  getStatus: (id: string) => WatchStatus | undefined,
+): Entry[] {
   return entries.filter((e) => {
     if (filters.lineages.length > 0 && !e.lineage.some((l) => filters.lineages.includes(l))) return false
     if (filters.studios.length > 0 && !filters.studios.includes(e.studio)) return false
     if (filters.types.length > 0 && !filters.types.includes(e.type)) return false
-    if (filters.watched === 'watched' && !isWatched(e.id)) return false
-    if (filters.watched === 'unwatched' && isWatched(e.id)) return false
+    if (filters.watched === 'watched' && getStatus(e.id) !== 'watched') return false
+    if (filters.watched === 'skip' && getStatus(e.id) !== 'skip') return false
+    if (filters.watched === 'pending' && getStatus(e.id) !== undefined) return false
     if (filters.yearFrom != null && e.year < filters.yearFrom) return false
     if (filters.yearTo != null && e.year > filters.yearTo) return false
     return true

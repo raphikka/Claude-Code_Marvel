@@ -1,6 +1,6 @@
 import type { Entry } from '../data/types'
 import { StudioBadge } from './StudioBadge'
-import { FilmIcon, TvIcon, SparkleIcon, CheckIcon } from './icons'
+import { FilmIcon, TvIcon, SparkleIcon, CheckIcon, CloseIcon } from './icons'
 import { useWatched } from '../hooks/useWatched'
 
 const TYPE_ICON = {
@@ -16,14 +16,14 @@ const TYPE_LABEL: Record<Entry['type'], string> = {
 }
 
 export function EntryCard({ entry, subtitle }: { entry: Entry; subtitle?: string }) {
-  const { isWatched, toggle } = useWatched()
-  const watched = isWatched(entry.id)
+  const { getStatus, toggleWatched, toggleSkip } = useWatched()
+  const status = getStatus(entry.id)
   const Icon = TYPE_ICON[entry.type]
   const yearLabel = entry.yearEnd && entry.yearEnd !== entry.year ? `${entry.year}–${entry.yearEnd}` : `${entry.year}`
 
   return (
     <li className="flex items-start gap-2 rounded-xl border border-neutral-800 bg-neutral-900/60 p-3 active:bg-neutral-900">
-      <div className={'flex min-w-0 flex-1 gap-3 transition-opacity ' + (watched ? 'opacity-45' : '')}>
+      <div className={'flex min-w-0 flex-1 gap-3 transition-opacity ' + (status ? 'opacity-45' : '')}>
         <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-800 text-neutral-400">
           <Icon className="h-5 w-5" />
         </div>
@@ -45,25 +45,48 @@ export function EntryCard({ entry, subtitle }: { entry: Entry; subtitle?: string
               <span className="text-xs text-neutral-500">· {entry.seasons} temporadas</span>
             )}
           </div>
+          {entry.streaming && (
+            <div className="mt-1 text-xs text-neutral-500">
+              Onde assistir: <span className="font-medium text-neutral-400">{entry.streaming}</span>
+            </div>
+          )}
           {subtitle && <div className="mt-1 text-xs font-medium text-neutral-500">{subtitle}</div>}
           {entry.note && <p className="mt-1.5 text-[13px] leading-snug text-neutral-400">{entry.note}</p>}
         </div>
       </div>
 
-      <button
-        type="button"
-        aria-pressed={watched}
-        aria-label={watched ? `Desmarcar "${entry.title}" como assistido` : `Marcar "${entry.title}" como assistido`}
-        onClick={() => toggle(entry.id)}
-        className={
-          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-colors ' +
-          (watched
-            ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400'
-            : 'border-neutral-700 text-transparent active:border-neutral-500')
-        }
-      >
-        <CheckIcon className="h-4.5 w-4.5" />
-      </button>
+      <div className="flex shrink-0 gap-1">
+        <button
+          type="button"
+          aria-pressed={status === 'watched'}
+          aria-label={status === 'watched' ? `Desmarcar "${entry.title}" como assistido` : `Marcar "${entry.title}" como assistido`}
+          onClick={() => toggleWatched(entry.id)}
+          className={
+            'flex h-8 w-8 items-center justify-center rounded-full border transition-colors ' +
+            (status === 'watched'
+              ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400'
+              : 'border-neutral-700 text-transparent active:border-neutral-500')
+          }
+        >
+          <CheckIcon className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          aria-pressed={status === 'skip'}
+          aria-label={
+            status === 'skip' ? `Remover marca "não vou assistir" de "${entry.title}"` : `Marcar "${entry.title}" como não vou assistir`
+          }
+          onClick={() => toggleSkip(entry.id)}
+          className={
+            'flex h-8 w-8 items-center justify-center rounded-full border transition-colors ' +
+            (status === 'skip'
+              ? 'border-red-500 bg-red-500/15 text-red-400'
+              : 'border-neutral-700 text-transparent active:border-neutral-500')
+          }
+        >
+          <CloseIcon className="h-4 w-4" />
+        </button>
+      </div>
     </li>
   )
 }

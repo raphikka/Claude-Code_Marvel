@@ -99,12 +99,13 @@ export function FilterPanel({
 
         <div className="flex-1 overflow-y-auto">
           <FilterSection title="Assistidos">
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {(
                 [
                   { id: 'all', label: 'Todos' },
                   { id: 'watched', label: 'Assistidos' },
-                  { id: 'unwatched', label: 'Não assistidos' },
+                  { id: 'skip', label: 'Não vou assistir' },
+                  { id: 'pending', label: 'Pendentes' },
                 ] as const
               ).map((opt) => (
                 <Chip key={opt.id} active={filters.watched === opt.id} onClick={() => onChange({ ...filters, watched: opt.id })}>

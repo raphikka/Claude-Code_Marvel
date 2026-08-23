@@ -24,16 +24,18 @@ const ALL_YEARS = [...ENTRIES, ...PRE_2000_ENTRIES].map((e) => e.year)
 const YEAR_BOUNDS: [number, number] = [Math.min(...ALL_YEARS), Math.max(...ALL_YEARS)]
 
 function WatchedProgress() {
-  const { watchedCount } = useWatched()
-  const pct = TOTAL_ENTRIES === 0 ? 0 : Math.round((watchedCount / TOTAL_ENTRIES) * 100)
+  const { watchedCount, skipCount } = useWatched()
+  const donePct = TOTAL_ENTRIES === 0 ? 0 : (watchedCount / TOTAL_ENTRIES) * 100
+  const skipPct = TOTAL_ENTRIES === 0 ? 0 : (skipCount / TOTAL_ENTRIES) * 100
 
   return (
     <div className="mt-2.5 flex items-center gap-2">
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
-        <div className="h-full rounded-full bg-emerald-500 transition-[width]" style={{ width: `${pct}%` }} />
+      <div className="flex h-1.5 flex-1 overflow-hidden rounded-full bg-neutral-800">
+        <div className="h-full bg-emerald-500 transition-[width]" style={{ width: `${donePct}%` }} />
+        <div className="h-full bg-red-500 transition-[width]" style={{ width: `${skipPct}%` }} />
       </div>
       <span className="shrink-0 text-xs font-medium text-neutral-500">
-        {watchedCount}/{TOTAL_ENTRIES} assistidos
+        {watchedCount + skipCount}/{TOTAL_ENTRIES}
       </span>
     </div>
   )
@@ -59,10 +61,10 @@ function AppShell() {
   const [view, setView] = useState<ModernView>('studio')
   const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { isWatched } = useWatched()
+  const { getStatus } = useWatched()
 
-  const modernEntries = useMemo(() => applyFilters(ENTRIES, filters, isWatched), [filters, isWatched])
-  const classicEntries = useMemo(() => applyFilters(PRE_2000_ENTRIES, filters, isWatched), [filters, isWatched])
+  const modernEntries = useMemo(() => applyFilters(ENTRIES, filters, getStatus), [filters, getStatus])
+  const classicEntries = useMemo(() => applyFilters(PRE_2000_ENTRIES, filters, getStatus), [filters, getStatus])
   const activeEntries = era === 'modern' ? modernEntries : classicEntries
   const filterCount = activeFilterCount(filters)
 
@@ -168,7 +170,8 @@ function AppShell() {
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}
       >
         Cronologia editorial não-oficial, feita por fãs — sujeita a revisão conforme novos lançamentos. Seu progresso
-        de "assistidos" fica salvo neste navegador.
+        de "assistidos" fica salvo neste navegador. Informações de streaming podem variar por região e mudar com o
+        tempo.
       </footer>
 
       <FilterPanel
