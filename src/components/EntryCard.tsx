@@ -65,7 +65,7 @@ export function EntryCard({ entry, subtitle }: { entry: Entry; subtitle?: string
             'flex h-8 w-8 items-center justify-center rounded-full border transition-colors ' +
             (status === 'watched'
               ? 'border-emerald-500 bg-emerald-500/15 text-emerald-400'
-              : 'border-neutral-700 text-transparent active:border-neutral-500')
+              : 'border-neutral-700 text-neutral-600 active:border-neutral-500')
           }
         >
           <CheckIcon className="h-4 w-4" />
@@ -81,7 +81,7 @@ export function EntryCard({ entry, subtitle }: { entry: Entry; subtitle?: string
             'flex h-8 w-8 items-center justify-center rounded-full border transition-colors ' +
             (status === 'skip'
               ? 'border-red-500 bg-red-500/15 text-red-400'
-              : 'border-neutral-700 text-transparent active:border-neutral-500')
+              : 'border-neutral-700 text-neutral-600 active:border-neutral-500')
           }
         >
           <CloseIcon className="h-4 w-4" />
